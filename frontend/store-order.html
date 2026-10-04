@@ -5,7 +5,7 @@
 <title>Place Order — Waypoint Store Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css" />
 <link rel="stylesheet" href="css/components.css" />
 <link rel="stylesheet" href="css/layout.css" />
@@ -27,7 +27,7 @@
   </div>
   <div class="sm-wrap">
     <div class="page-head" style="align-items:flex-start;">
-      <div><h1>Place Order</h1><div class="desc">For delivery tomorrow, Thu 1 Oct</div></div>
+      <div><h1>Place Order</h1><div class="desc">For delivery tomorrow, Tue 6 Oct</div></div>
     </div>
 
     <div class="cutoff-card">
@@ -62,10 +62,13 @@
 <script src="js/wp-live.js"></script>
 <script src="js/app.js"></script>
 <script>
-  let t = 8072;
   const el = document.getElementById("cutoff");
   setInterval(() => {
-    t--; if (t < 0) t = 0;
+    const now = new Date();
+    const cutoff = new Date();
+    cutoff.setHours(16, 0, 0, 0);
+    let t = Math.floor((cutoff - now) / 1000);
+    if (t < 0) { t += 86400; } // Time until next day's cutoff
     const h = String(Math.floor(t/3600)).padStart(2,"0");
     const m = String(Math.floor((t%3600)/60)).padStart(2,"0");
     const s = String(t%60).padStart(2,"0");

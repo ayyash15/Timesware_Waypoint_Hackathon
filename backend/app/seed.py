@@ -109,7 +109,8 @@ def seed_if_empty():
         if db.scalar(select(func.count()).select_from(m.User)):
             return "already seeded"
         seed_reference(db)
-        n = seed_orders(db)
+        # n = seed_orders(db)  # Disable bulk random orders
+        n = 0
         db.flush()
         seed_users(db)
         db.commit()
