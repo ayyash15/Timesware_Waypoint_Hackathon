@@ -14,6 +14,7 @@ TMP = tempfile.mkdtemp()
 os.environ.update(
     DATABASE_URL=f"sqlite:///{TMP}/test.db", DATA_DIR=str(FIX), DEMO_DATE="2026-10-06",
     DEMAND_SCALE=os.getenv("DEMAND_SCALE", "1.8"), WORKSHOP_COUNT="1", SECRET_KEY="test-secret",
+    SEED_BULK="1",
     FRONTEND_DIR=os.getenv("FRONTEND_DIR", str(ROOT / "frontend")))
 sys.path.insert(0, str(ROOT / "backend"))
 
