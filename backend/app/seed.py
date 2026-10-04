@@ -90,7 +90,7 @@ def seed_users(db):
     veh = db.scalars(select(m.Vehicle).where(m.Vehicle.depot == "Peliyagoda", m.Vehicle.temp == "reefer",
                                              m.Vehicle.type == "truck", m.Vehicle.status == "available")
                      .order_by(m.Vehicle.vehicle_id)).first()
-    outlet = db.scalars(select(m.Outlet).join(m.Order, m.Order.outlet_id == m.Outlet.outlet_id)
+    outlet = db.scalars(select(m.Outlet)
                         .where(m.Outlet.brand == "Fresh", m.Outlet.depot == "Peliyagoda")
                         .order_by(m.Outlet.outlet_id)).first()
     db.add_all([
