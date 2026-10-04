@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Stop Detail — Waypoint Driver</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  body { background: var(--c-ink-900); }
+  .phone-top { background: var(--c-navy-grad); border-bottom: none; color: #fff; }
+  .phone-top a { color: #8b96a1 !important; }
+  .phone-top .muted { color: #8b96a1 !important; }
+  .detail-row { display:flex; justify-content:space-between; padding: 12px 0; border-bottom: 1px solid var(--c-border); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .k { color: var(--c-ink-500); }
+  .detail-row .v { font-weight:600; text-align:right; }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+<div class="phone-frame">
+  <div id="offline-bar" class="offline-bar" style="display:none;"></div>
+  <div class="phone-top">
+    <div class="flex justify-between items-center">
+      <a href="driver-stops.html" class="small" style="text-decoration:none; color:var(--c-ink-500);">&larr; Today's stops</a>
+      <a href="index.html" aria-label="Home" title="Home" class="btn-icon btn-ghost btn" style="color:var(--c-ink-500);"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5L8 2l6 5.5"/><path d="M3.5 6.5V14h9V6.5"/></svg></a>
+    </div>
+    <h1 style="font-size:var(--fs-500); margin-top:4px;">Peliyagoda Supermarket</h1>
+    <div class="small muted">Stop 3 of 4</div>
+  </div>
+  <div class="phone-body">
+    <div class="alert alert-warning">
+      <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2"/></svg></span></span>
+      <div><strong>Rear dock access</strong><p class="small">Enter via Kandy Road side gate. Security checks driver ID before dock opens.</p></div>
+    </div>
+    <div class="card">
+      <div class="detail-row"><span class="k">Address</span><span class="v">142 Kandy Road, Peliyagoda</span></div>
+      <div class="detail-row"><span class="k">Delivery window</span><span class="v">05:30 – 08:00</span></div>
+      <div class="detail-row"><span class="k">Dock type</span><span class="v">Rear dock</span></div>
+      <div class="detail-row"><span class="k">Parking</span><span class="v">Truck bay, no constraint</span></div>
+      <div class="detail-row"><span class="k">Mall window</span><span class="v">—</span></div>
+      <div class="detail-row"><span class="k">Order contents</span><span class="v">22 cases &middot; Chilled dairy &amp; produce</span></div>
+    </div>
+  </div>
+  <div class="phone-cta-bar">
+    <a class="btn btn-brand btn-lg btn-block" href="driver-outcome.html">Record Outcome</a>
+  </div>
+</div>
+<script src="js/wp-live.js"></script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  if (WOWPremium.ResponsiveInteractions && WOWPremium.ResponsiveInteractions.init) { WOWPremium.ResponsiveInteractions.init(); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card"); }
+  if (WOWPremium.initScrollAnimations) { WOWPremium.initScrollAnimations({ sectionReveal: { scale: 0.96, opacity: 0.8, translateY: 20 } }); }
+})();
+</script>
+</body>
+</html>

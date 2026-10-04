@@ -1,0 +1,13 @@
+vehicle_id,type,temp,weight_cap_kg,volume_cap_m3,fuel_type,km_per_l,weekly_fuel_quota_l,depot
+VEH001,truck,reefer,6000,28,diesel,4.5,900,Peliyagoda
+VEH002,truck,reefer,6000,28,diesel,4.5,900,Peliyagoda
+VEH003,truck,reefer,6000,28,diesel,4.5,900,Peliyagoda
+VEH004,truck,reefer,6000,28,diesel,4.5,900,Peliyagoda
+VEH005,truck,ambient,7000,32,diesel,4.0,900,Peliyagoda
+VEH006,truck,ambient,7000,32,diesel,4.0,900,Peliyagoda
+VEH007,truck,ambient,7000,32,diesel,4.0,900,Peliyagoda
+VEH008,van,ambient,1500,9,petrol,9.0,400,Peliyagoda
+VEH009,van,ambient,1500,9,petrol,9.0,400,Peliyagoda
+VEH010,van,ambient,1500,9,petrol,9.0,400,Peliyagoda
+VEH011,truck,reefer,5000,22,diesel,4.5,900,Kandy
+VEH012,truck,reefer,5000,22,diesel,4.5,900,Kandy

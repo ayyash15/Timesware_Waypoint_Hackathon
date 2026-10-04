@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Capacity Planning — Waypoint Dispatcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  .demand-cell { display:flex; align-items:center; gap:10px; min-width: 170px; }
+  .demand-cell .bar-track { flex:1; height:7px; border-radius: var(--r-pill); background: var(--c-surface-3); overflow:hidden; }
+  .demand-cell .bar-fill { display:block; height:100%; border-radius: var(--r-pill); background: var(--c-brand-grad); }
+  .demand-cell .bar-fill.chilled { background: linear-gradient(90deg, var(--c-chilled), #2b98ad); }
+  .demand-cell .val { font-weight:600; white-space:nowrap; }
+  .week-badge { display:inline-flex; align-items:center; gap:6px; font-weight:600; }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+<div class="app-shell" id="app-shell"></div>
+
+<template id="page-tpl">
+  <div class="page-head">
+    <div>
+      <h1>Capacity Planning</h1>
+      <div class="desc">Forward-looking demand forecasts for the next 10 weeks — plan vehicles, drivers, and refrigerated capacity ahead of payday and festival peaks.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 5v.1" stroke-linecap="round"/></svg></span></span>
+    <div>This view consumes the Datathon's demand forecast (<span class="mono">pred_total_volume_m3</span>, <span class="mono">pred_chilled_volume_m3</span>) — not live orders. Figures are projections, not confirmed demand.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr>
+        <th>Week</th><th>Brand</th><th>Depot</th><th>Forecast demand</th><th>Chilled demand</th><th>Vehicles needed</th><th>Refrigerated needed</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</template>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  mountDispatcherShell("capacity");
+  document.getElementById("content").innerHTML = document.getElementById("page-tpl").innerHTML;
+
+  const maxForecast = Math.max(...WP_DATA.capacityPlanning.map(r => parseFloat(r.forecast)));
+  const maxChilled = Math.max(...WP_DATA.capacityPlanning.map(r => parseFloat(r.chilled)), 1);
+  document.getElementById("rows").innerHTML = WP_DATA.capacityPlanning.map(r => {
+    const fPct = Math.max(6, Math.round((parseFloat(r.forecast) / maxForecast) * 100));
+    const cVal = parseFloat(r.chilled) || 0;
+    const cPct = Math.max(cVal ? 6 : 0, Math.round((cVal / maxChilled) * 100));
+    return `
+    <tr class="${r.week.includes('Festival') ? 'row-flagged' : ''}">
+      <td><span class="week-badge">${r.week.includes('Festival') ? '<span class="badge badge-warning">Peak</span>' : ''}${r.week}</span></td>
+      <td>${r.brand}</td>
+      <td>${r.depot}</td>
+      <td><div class="demand-cell"><span class="val">${r.forecast}</span><div class="bar-track"><span class="bar-fill" style="width:${fPct}%"></span></div></div></td>
+      <td><div class="demand-cell"><span class="val">${r.chilled}</span><div class="bar-track"><span class="bar-fill chilled" style="width:${cPct}%"></span></div></div></td>
+      <td>${r.vehiclesNeeded}</td>
+      <td>${r.reeferNeeded}</td>
+    </tr>`;
+  }).join("");
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initPage();
+  if (WOWPremium.TopbarAnchor && WOWPremium.TopbarAnchor.createSticky) { WOWPremium.TopbarAnchor.createSticky(); }
+  document.querySelectorAll("[role='button'], .btn, .select").forEach(function(el){ el.setAttribute("data-cursor-respond",""); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Deferral Summary — Waypoint Dispatcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+<div class="app-shell" id="app-shell"></div>
+
+<template id="page-tpl">
+  <div class="page-head">
+    <div>
+      <h1>Deferral Summary</h1>
+      <div class="desc">Every deferred order for tomorrow's run, with the reason a dispatcher can repeat back to the store manager.</div>
+    </div>
+    <button class="btn btn-brand" id="commit-btn">Commit Plan</button>
+  </div>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></span>
+    <div><strong>5 orders deferred</strong> for tomorrow's run. 2 outlets have now been deferred on consecutive runs — flagged below.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr>
+        <th>Outlet</th><th>Brand</th><th>District</th><th>Reason</th><th>Deferred yesterday</th><th>Days since last served</th><th>Next expected run</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</template>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  mountDispatcherShell("deferrals");
+  document.getElementById("content").innerHTML = document.getElementById("page-tpl").innerHTML;
+
+  document.getElementById("rows").innerHTML = WP_DATA.deferrals.map(d => `
+    <tr class="${d.daysSince >= 3 ? 'row-flagged' : ''}">
+      <td><strong>${d.outlet}</strong></td>
+      <td>${d.brand}</td>
+      <td>${d.district}</td>
+      <td><span class="badge badge-neutral">${d.reason}</span></td>
+      <td>${d.deferredYesterday ? '<span class="badge badge-danger">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
+      <td>${d.daysSince >= 3 ? `<strong style="color:var(--c-danger);">${d.daysSince} days</strong>` : d.daysSince + ' days'}</td>
+      <td>${d.nextRun}</td>
+    </tr>`).join("");
+
+  document.getElementById("commit-btn").addEventListener("click", () => {
+    toast("Plan committed — dock queue and driver routes have been generated.", "success");
+    setTimeout(() => window.location.href = "live-operations.html", 900);
+  });
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initPage();
+  if (WOWPremium.TopbarAnchor && WOWPremium.TopbarAnchor.createSticky) { WOWPremium.TopbarAnchor.createSticky(); }
+  document.querySelectorAll("[role='button'], .btn, .select").forEach(function(el){ el.setAttribute("data-cursor-respond",""); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* ==========================================================================
+   WAYPOINT DESIGN SYSTEM — LAYOUT
+   ========================================================================== */
+
+.app-shell { display: flex; min-height: 100vh; background: var(--c-surface-1); }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.content { padding: var(--sp-6); max-width: var(--content-max); width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-6); animation: wp-rise var(--dur-slow) var(--ease) both; }
+
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--sp-3); }
+.page-head h1 { font-size: var(--fs-600); }
+.page-head .desc { color: var(--c-ink-500); font-size: var(--fs-300); margin-top: 4px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-4); }
+.kpi-row.kpi-4 { grid-template-columns: repeat(4, 1fr); }
+.kpi-row.kpi-3 { grid-template-columns: repeat(3, 1fr); }
+
+.grid-3col { display: grid; grid-template-columns: 300px 1fr 320px; gap: var(--sp-4); align-items: start; }
+.grid-2col { display: grid; grid-template-columns: 1fr 340px; gap: var(--sp-5); align-items: start; }
+
+.panel-scroll { max-height: calc(100vh - 260px); overflow-y: auto; }
+
+/* Mobile driver frame */
+.phone-frame { max-width: 420px; margin: 0 auto; min-height: 100vh; background: var(--c-surface-1); display: flex; flex-direction: column; box-shadow: var(--sh-3); }
+.phone-top { padding: var(--sp-4) var(--sp-5) var(--sp-3); background: var(--c-surface-0); border-bottom: 1px solid var(--c-border); position: relative; z-index: 2; }
+.phone-body { padding: var(--sp-4); flex: 1; display: flex; flex-direction: column; gap: var(--sp-3); animation: wp-rise var(--dur-slow) var(--ease) both; }
+.phone-cta-bar { position: sticky; bottom: 0; background: var(--c-surface-0); border-top: 1px solid var(--c-border); padding: var(--sp-4); box-shadow: 0 -8px 20px rgba(0,0,0,.05); }
+
+/* Tablet loader frame */
+.tablet-frame { max-width: 960px; margin: 0 auto; }
+.tablet-frame .content { animation: wp-rise var(--dur-slow) var(--ease) both; }
+
+@media (max-width: 1100px) {
+  .grid-3col { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .sidebar { display: none; }
+  .kpi-row, .kpi-row.kpi-4, .kpi-row.kpi-3 { grid-template-columns: repeat(2, 1fr); }
+  .content { padding: var(--sp-4); }
+  .grid-2col { grid-template-columns: 1fr; }
+}
+
+/* ===== Responsive hardening (all pages) ===== */
+img, svg, video, canvas { max-width: 100%; }
+@media (max-width: 720px) {
+  .topbar { height: auto; min-height: var(--topbar-h); flex-wrap: wrap; padding: var(--sp-3) var(--sp-4); row-gap: var(--sp-2); }
+  .topbar-left { flex-wrap: wrap; gap: var(--sp-2); min-width: 0; }
+  .topbar-right { gap: var(--sp-2); margin-left: auto; }
+  .search-box { min-width: 0; padding: 8px 10px; }
+  .search-box span { display: none; }
+  .chip { white-space: nowrap; }
+  .tb-top { padding: var(--sp-3) var(--sp-4) !important; gap: var(--sp-2); flex-wrap: wrap; }
+  .tb-top .name { font-size: var(--fs-400) !important; white-space: nowrap; }
+  .tb-top .chip { white-space: nowrap; }
+  .page-head { flex-wrap: wrap; gap: var(--sp-3); }
+  .page-head .btn { max-width: 100%; }
+  .dock-card, .stop-card { flex-wrap: wrap; padding: var(--sp-4) !important; }
+  .dock-card > div, .stop-card > div { min-width: 0; }
+  .dock-card > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+  .dock-card .btn-lg { flex: 1 1 100%; justify-content: center; padding: 12px 16px; font-size: var(--fs-400); white-space: normal; }
+  .btn-lg { padding: 12px 16px; font-size: var(--fs-400); }
+  .card, .panel { min-width: 0; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .modal { max-width: calc(100vw - 24px); }
+}
+@media (max-width: 420px) {
+  .topbar-left .chip:nth-child(n+2) { display: none; }
+  .kpi-row, .kpi-row.kpi-4, .kpi-row.kpi-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .tb-top .flex { flex-wrap: wrap; min-width: 0; gap: var(--sp-2); }
+  .tb-top .chip { white-space: normal; max-width: 100%; }
+}
+@media (max-width: 480px) {
+  .sm-top { padding: var(--sp-3) var(--sp-4) !important; gap: var(--sp-2); flex-wrap: wrap; }
+  .sm-top .flex { flex-wrap: wrap; min-width: 0; }
+  .sm-top .chip { white-space: normal; max-width: 100%; }
+  .sm-wrap { padding: var(--sp-4) !important; }
+  .cutoff-card { flex-wrap: wrap; gap: var(--sp-3); }
+  .qty-row { gap: var(--sp-3); flex-wrap: wrap; }
+}

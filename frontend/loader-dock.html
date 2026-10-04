@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dock Queue — Waypoint Loader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  body { background: var(--c-surface-1); }
+  .tb-top { background: var(--c-navy-grad); color:#fff; padding: var(--sp-4) var(--sp-6); display:flex; justify-content:space-between; align-items:center; box-shadow: var(--sh-2); position: sticky; top:0; z-index: 5; }
+  .tb-top .name { font-family: var(--f-display); font-weight:700; font-size: var(--fs-500); }
+  .dock-card { background: var(--c-surface-0); border:1px solid var(--c-border); border-radius: var(--r-lg); box-shadow: var(--sh-1); transition: box-shadow var(--dur-med) var(--ease), transform var(--dur-med) var(--ease); padding: var(--sp-5); display:flex; justify-content:space-between; align-items:center; gap: var(--sp-4); margin-bottom: var(--sp-4); }
+  .dock-card:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
+  .dock-card .veh { font-family: var(--f-display); font-size: var(--fs-600); font-weight:700; }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+  <div class="tb-top">
+    <a class="name" href="index.html" style="text-decoration:none; color:inherit;">Waypoint &middot; Loader</a>
+    <div class="flex gap-3 items-center"><span class="chip" style="background:rgba(255,255,255,.08); color:#fff;">Peliyagoda Dock</span><a href="index.html" aria-label="Home" title="Home" class="btn-icon btn-ghost btn" style="color:#fff;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5L8 2l6 5.5"/><path d="M3.5 6.5V14h9V6.5"/></svg></a><div class="avatar">SL</div></div>
+  </div>
+  <div class="tablet-frame content">
+    <div class="page-head">
+      <div><h1>Dock Queue</h1><div class="desc">Vehicles queued to load, in departure order.</div></div>
+    </div>
+    <div id="cards"></div>
+  </div>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const statusBadge = s => ({
+    "Loaded": '<span class="badge badge-success">Loaded</span>',
+    "Loading": '<span class="badge badge-warning">Loading</span>',
+    "Queued": '<span class="badge badge-neutral">Queued</span>'
+  })[s];
+  document.getElementById("cards").innerHTML = WP_DATA.dockQueue.map(d => `
+    <div class="dock-card">
+      <div class="flex gap-5 items-center">
+        <div class="veh">${d.vehicle}</div>
+        <div>
+          <div style="font-weight:600;">${d.trip}</div>
+          <div class="small muted">Departs ${d.departure} &middot; ${d.brand} &middot; ${d.district}</div>
+        </div>
+      </div>
+      <div class="flex gap-4 items-center">
+        ${statusBadge(d.status)}
+        <a class="btn btn-brand btn-lg" href="loader-loading.html">Open loading list</a>
+      </div>
+    </div>`).join("");
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  if (WOWPremium.ResponsiveInteractions && WOWPremium.ResponsiveInteractions.init) { WOWPremium.ResponsiveInteractions.init(); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card"); }
+  if (WOWPremium.initScrollAnimations) { WOWPremium.initScrollAnimations({ sectionReveal: { scale: 0.96, opacity: 0.8, translateY: 20 } }); }
+})();
+</script>
+</body>
+</html>

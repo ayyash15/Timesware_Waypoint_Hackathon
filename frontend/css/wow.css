@@ -1,0 +1,158 @@
+/* ==========================================================================
+   WAYPOINT — WOW LAYER
+   Additive polish for the flagship screens (hub, dispatcher overview,
+   allocation, live ops). Loaded AFTER tokens/components/layout — every rule
+   here only sharpens what already exists, never replaces the system.
+   ========================================================================== */
+
+:root {
+  --wow-glow-brand: 0 0 0 1px rgba(214,143,31,.35), 0 14px 34px rgba(179,115,10,.20);
+  --wow-glow-danger: 0 0 0 1px rgba(217,72,72,.35), 0 14px 34px rgba(194,59,59,.22);
+  --wow-mesh-1: radial-gradient(circle at 8% 12%, rgba(179,115,10,.09), transparent 42%);
+  --wow-mesh-2: radial-gradient(circle at 92% 0%, rgba(36,114,164,.08), transparent 38%);
+  --wow-mesh-3: radial-gradient(circle at 45% 100%, rgba(31,122,140,.06), transparent 48%);
+}
+
+/* ---------- Top accent line (all wow pages) ---------- */
+.wow-topline {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 40; pointer-events: none;
+  background: linear-gradient(90deg, var(--c-brand), var(--c-info), var(--c-chilled), var(--c-brand));
+  background-size: 300% 100%;
+  animation: wow-topline-sweep 8s linear infinite;
+}
+@keyframes wow-topline-sweep { to { background-position: -300% 0; } }
+
+/* ---------- Ambient mesh backdrop (dispatcher shell pages) ---------- */
+body.wow-mesh { position: relative; }
+body.wow-mesh::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: var(--wow-mesh-1), var(--wow-mesh-2), var(--wow-mesh-3);
+  background-repeat: no-repeat;
+  animation: wow-drift 26s ease-in-out infinite alternate;
+}
+body.wow-mesh .app-shell { position: relative; z-index: 1; }
+@keyframes wow-drift {
+  0%   { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 40px -30px, -30px 40px, 20px 20px; }
+}
+
+/* ---------- Glass chrome ---------- */
+body.wow-mesh .topbar {
+  background: rgba(255,255,255,.68);
+  backdrop-filter: saturate(200%) blur(16px);
+  -webkit-backdrop-filter: saturate(200%) blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 8px 26px rgba(20,24,30,.05);
+}
+body.wow-mesh .sidebar {
+  box-shadow: 4px 0 28px rgba(0,0,0,.20);
+}
+body.wow-mesh .sidebar-brand .mark { animation: wow-pulse-glow 3.2s ease-in-out infinite; }
+@keyframes wow-pulse-glow {
+  0%, 100% { box-shadow: var(--sh-brand); }
+  50%      { box-shadow: 0 0 0 7px rgba(179,115,10,.16), var(--sh-brand); }
+}
+body.wow-mesh .nav-item.active { position: relative; }
+body.wow-mesh .nav-item.active::after {
+  content: ""; position: absolute; right: 10px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
+  border-radius: 50%; background: var(--c-brand-hi);
+  box-shadow: 0 0 0 0 rgba(214,143,31,.6);
+  animation: wow-ring-soft 2s ease-out infinite;
+}
+
+/* ---------- Kinetic gradient headline ---------- */
+.wow-kinetic-h1 {
+  --kh-base: var(--c-ink-900);
+  background: linear-gradient(100deg, var(--kh-base) 28%, var(--c-brand-hi) 46%, var(--c-info) 54%, var(--kh-base) 72%);
+  background-size: 260% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: wow-sheen 7s linear infinite;
+}
+@keyframes wow-sheen { to { background-position: -260% center; } }
+
+/* ---------- Cards & KPIs: lift, glow, tabular numerals ---------- */
+body.wow-mesh .kpi-card, body.wow-mesh .card, .hub .role-card { will-change: transform; }
+body.wow-mesh .kpi-card { transform-style: preserve-3d; transition: transform var(--dur-med) var(--ease-spring), box-shadow var(--dur-med) var(--ease); }
+body.wow-mesh .kpi-card:hover { box-shadow: var(--sh-2), var(--wow-glow-brand); }
+body.wow-mesh .kpi-card.tone-danger:hover { box-shadow: var(--sh-2), var(--wow-glow-danger); }
+body.wow-mesh .stat-value, .sf-pill b { font-variant-numeric: tabular-nums; }
+body.wow-mesh .card-hover, body.wow-mesh .trip-card { transition: transform var(--dur-med) var(--ease-spring), box-shadow var(--dur-med) var(--ease); }
+
+/* ---------- Buttons: shine sweep + magnetic readiness ---------- */
+body.wow-mesh .btn-brand, .hub .role-card .go { position: relative; overflow: hidden; }
+body.wow-mesh .btn-brand::after {
+  content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.5), transparent);
+  transform: skewX(-20deg); transition: left .7s ease;
+}
+body.wow-mesh .btn-brand:hover::after { left: 130%; }
+.wow-magnetic { transition: transform .18s var(--ease-spring); }
+
+/* ---------- Live pulse upgrade ---------- */
+.badge-dot.live { position: relative; }
+.badge-dot.live::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid currentColor;
+  animation: wow-ring 1.7s ease-out infinite;
+}
+@keyframes wow-ring { 0% { transform: scale(.35); opacity: .9; } 100% { transform: scale(2); opacity: 0; } }
+@keyframes wow-ring-soft { 0% { box-shadow: 0 0 0 0 rgba(214,143,31,.5); } 100% { box-shadow: 0 0 0 7px rgba(214,143,31,0); } }
+
+/* ---------- Table row sweep-in highlight on hover ---------- */
+body.wow-mesh table.data tbody tr { position: relative; }
+body.wow-mesh table.data tbody tr:hover td:first-child::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c-brand-grad);
+}
+
+/* ---------- Shortfall banner (allocation flagship moment) ---------- */
+.wow-urgent { position: relative; }
+.wow-urgent::after {
+  content: ""; position: absolute; inset: -1px; border-radius: var(--r-lg); pointer-events: none;
+  box-shadow: 0 0 0 0 rgba(194,59,59,.35); animation: wow-urgent-pulse 2.4s ease-out infinite;
+}
+@keyframes wow-urgent-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(194,59,59,.35); }
+  70%  { box-shadow: 0 0 0 10px rgba(194,59,59,0); }
+  100% { box-shadow: 0 0 0 0 rgba(194,59,59,0); }
+}
+.sf-pill { transition: transform var(--dur-fast) var(--ease); }
+.sf-pill:hover { transform: translateY(-2px); }
+
+/* ---------- Progress bars: allow JS-driven fill-in transition ---------- */
+.wow-fill-in > span { width: 0 !important; }
+
+/* ---------- Reveal helper (JS toggles .wow-in) ---------- */
+.wow-reveal { opacity: 0; transform: translateY(14px); }
+.wow-reveal.wow-in { opacity: 1; transform: translateY(0); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+/* table rows: opacity-only variant (transform on <tr> renders inconsistently across browsers) */
+table.data tbody tr.wow-reveal { transform: none; }
+table.data tbody tr.wow-reveal.wow-in { transition: opacity .45s var(--ease); }
+
+/* ==========================================================================
+   INDEX HUB — immersive hero
+   ========================================================================== */
+.hub { position: relative; z-index: 2; }
+/* Canvas is a replaced element: inset alone doesn't stretch it, it only
+   offsets its intrinsic 300x150 default box, leaving most of the network
+   animation outside the viewport. Explicit width/height fixes that. */
+#wow-network { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .8; }
+.hub .eyebrow { position: relative; overflow: hidden; }
+.hub .eyebrow::after {
+  content: ""; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.5), transparent);
+  animation: wow-eyebrow-sheen 3.4s ease-in-out infinite;
+}
+@keyframes wow-eyebrow-sheen { 0% { left: -100%; } 40%, 100% { left: 140%; } }
+.hub .role-card { transform-style: preserve-3d; }
+.hub .role-card .role-icon { transition: transform var(--dur-med) var(--ease-spring); }
+.hub .role-card:hover .role-icon { transform: translateZ(18px) scale(1.08); }
+.hub .brand-row .mark { animation: wow-pulse-glow 3.2s ease-in-out infinite; }
+
+@media (max-width: 720px) {
+  .wow-topline { display: none; }
+  #wow-network { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wow-topline, body.wow-mesh::before, .wow-kinetic-h1, .badge-dot.live::after,
+  .sidebar-brand .mark, .nav-item.active::after, .wow-urgent::after, .hub .eyebrow::after {
+    animation: none !important;
+  }
+}

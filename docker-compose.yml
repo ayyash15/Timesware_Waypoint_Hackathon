@@ -1,0 +1,44 @@
+# One command: docker compose up --build      (no .env needed; every value has a default, see .env.example)
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-waypoint}
+      MYSQL_USER: ${MYSQL_USER:-waypoint}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-waypoint_pw}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_pw}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:                      # FastAPI API + the Designathon frontend served from /frontend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:-waypoint}:${MYSQL_PASSWORD:-waypoint_pw}@db:3306/${MYSQL_DATABASE:-waypoint}
+      DATA_DIR: /data
+      FRONTEND_DIR: /frontend
+      SECRET_KEY: ${SECRET_KEY:-change-me-long-random-string}
+      SEED_PASSWORD: ${SEED_PASSWORD:-Waypoint@2026}
+      DEMO_DATE: ${DEMO_DATE:-2026-10-06}
+      DEMAND_SCALE: ${DEMAND_SCALE:-1.8}
+      WORKSHOP_COUNT: ${WORKSHOP_COUNT:-4}
+      ENFORCE_CUTOFF: ${ENFORCE_CUTOFF:-0}
+      DEMO_LOGIN: ${DEMO_LOGIN:-1}
+    volumes:
+      - ./data:/data:ro      # drop the competition CSVs here (never committed); falls back to bundled synthetic samples
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+volumes:
+  dbdata:

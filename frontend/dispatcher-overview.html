@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Overview — Waypoint Dispatcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/wow.css" />
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body class="wow-mesh">
+<div class="wow-topline"></div>
+<div class="app-shell" id="app-shell"></div>
+
+<template id="page-tpl">
+  <div class="page-head">
+    <div>
+      <h1 class="wow-kinetic-h1">Today's Order Queue</h1>
+      <div class="desc">Confirmed orders for delivery — orders close at 4:00 PM the day before.</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-secondary">Export</button>
+      <a class="btn btn-brand" href="dispatcher-allocation.html">Go to Planning &rarr;</a>
+    </div>
+  </div>
+
+  <div class="kpi-row" id="kpis"></div>
+
+  <div class="card">
+    <div class="filter-row" style="margin-bottom: var(--sp-4);">
+      <select class="select"><option>Brand: All</option><option>Fresh</option><option>Style</option><option>Tech</option></select>
+      <select class="select"><option>District: All</option><option>Colombo</option><option>Gampaha</option><option>Kandy</option><option>Kurunegala</option><option>Matale</option></select>
+      <select class="select"><option>Temperature: All</option><option>Chilled</option><option>Ambient</option></select>
+      <select class="select"><option>Depot: Peliyagoda</option><option>Kandy</option></select>
+      <select class="select"><option>Status: All</option><option>Confirmed</option><option>At risk</option></select>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr>
+          <th>Outlet</th><th>Brand</th><th>District</th><th>Temp</th><th>Volume</th><th>Weight</th><th>Delivery window</th><th>Access</th><th>Status</th>
+        </tr></thead>
+        <tbody id="order-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/wow.js"></script>
+<script>
+  mountDispatcherShell("overview");
+  document.getElementById("content").innerHTML = document.getElementById("page-tpl").innerHTML;
+
+  const c = WP_DATA.capacity;
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi-card tone-brand"><div class="kpi-top"><span class="stat-label">Confirmed orders</span><div class="kpi-icon tone-brand">${ic("list")}</div></div><span class="stat-value">${c.confirmedOrders}</span></div>
+    <div class="kpi-card"><div class="kpi-top"><span class="stat-label">Total demand</span><div class="kpi-icon tone-neutral">${ic("grid")}</div></div><span class="stat-value">142 m³</span><span class="stat-sub">61,400 kg</span></div>
+    <div class="kpi-card tone-success"><div class="kpi-top"><span class="stat-label">Fleet capacity</span><div class="kpi-icon tone-success">${ic("route")}</div></div><span class="stat-value">${c.availableVehicles}</span><span class="stat-sub">vehicles available today</span></div>
+    <div class="kpi-card ${c.reeferUsed>=c.reeferTotal?'tone-danger':'tone-warn'}"><div class="kpi-top"><span class="stat-label">Refrigerated</span><div class="kpi-icon ${c.reeferUsed>=c.reeferTotal?'tone-danger':'tone-warn'}">${ic("pulse")}</div></div><span class="stat-value ${c.reeferUsed>=c.reeferTotal?'danger':'warn'}">${c.reeferUsed}/${c.reeferTotal}</span><span class="stat-sub">reefer slots committed</span></div>
+    <div class="kpi-card tone-danger"><div class="kpi-top"><span class="stat-label">At-risk orders</span><div class="kpi-icon tone-danger">${ic("bell")}</div></div><span class="stat-value danger">${c.atRisk}</span><span class="stat-sub"><a href="dispatcher-allocation.html" style="color:var(--c-danger);text-decoration:underline;">Review in Planning</a></span></div>
+  `;
+  staggerIn("#kpis", 60);
+  WOW.countUpAll("#kpis .stat-value", 900);
+  WOW.tilt(".kpi-card", 5);
+  WOW.magnetic(".btn-brand");
+
+  const statusBadge = s => s === "Confirmed"
+    ? `<span class="badge badge-success"><span class="badge-dot"></span>Confirmed</span>`
+    : `<span class="badge badge-warning"><span class="badge-dot"></span>At risk</span>`;
+  const tempBadge = t => t === "Chilled"
+    ? `<span class="badge badge-chilled">Chilled</span>`
+    : `<span class="badge badge-neutral">Ambient</span>`;
+
+  document.getElementById("order-rows").innerHTML = WP_DATA.orders.map(o => `
+    <tr class="${o.status === 'At risk' ? 'row-flagged' : ''}">
+      <td><strong>${o.outlet}</strong><div class="small muted">${o.id}</div></td>
+      <td>${o.brand}</td>
+      <td>${o.district}</td>
+      <td>${tempBadge(o.temp)}</td>
+      <td>${o.volume}</td>
+      <td>${o.weight}</td>
+      <td>${o.window}</td>
+      <td>${o.access}</td>
+      <td>${statusBadge(o.status)}</td>
+    </tr>`).join("");
+  WOW.reveal("#order-rows tr", 35);
+  document.querySelectorAll(".select").forEach(s => s.addEventListener("change", () => toast("Filters applied", "success")));
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initDispatcher();
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".kpi-card", { baseElevation: 2, hoverElevation: 12 }); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card", { baseElevation: 1, hoverElevation: 8 }); }
+  if (WOWPremium.TopbarAnchor && WOWPremium.TopbarAnchor.createSticky) { WOWPremium.TopbarAnchor.createSticky(); }
+  document.querySelectorAll("[role='button'], .btn, .select").forEach(function(el){ el.setAttribute("data-cursor-respond",""); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Live Operations — Waypoint Dispatcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/wow.css" />
+<link rel="stylesheet" href="css/wow-premium.css" />
+<style>
+  /* Vehicle marker riding the existing progress bar — position IS route progress, no separate motion */
+  .progress { position: relative; overflow: visible !important; }
+  .progress .veh-marker {
+    position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%;
+    background: #fff; transform: translate(-50%, -50%); box-shadow: 0 0 0 3px rgba(217,164,65,.22), 0 0 6px rgba(217,164,65,.9);
+    transition: left 900ms var(--ease-smooth, ease); opacity: 0;
+  }
+  .progress.live-route .veh-marker { opacity: 1; animation: veh-pulse 1.6s ease-in-out infinite; }
+  @keyframes veh-pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(217,164,65,.22), 0 0 6px rgba(217,164,65,.9); } 50% { box-shadow: 0 0 0 6px rgba(217,164,65,.08), 0 0 10px rgba(217,164,65,1); } }
+  @media (prefers-reduced-motion: reduce) { .progress.live-route .veh-marker { animation: none; } }
+</style>
+</head>
+<body class="wow-mesh">
+<div class="wow-topline"></div>
+<div class="app-shell" id="app-shell"></div>
+
+<template id="page-tpl">
+  <div class="page-head">
+    <div>
+      <h1 class="wow-kinetic-h1">Live Operations</h1>
+      <div class="desc">Real-time view of vehicles on the road. Loader and driver issues surface here immediately.</div>
+    </div>
+  </div>
+
+  <div class="kpi-row kpi-4" id="kpis">
+    <div class="kpi-card tone-brand"><div class="kpi-top"><span class="stat-label">In transit</span><div class="kpi-icon tone-brand" id="ic-transit"></div></div><span class="stat-value">2</span></div>
+    <div class="kpi-card tone-warn"><div class="kpi-top"><span class="stat-label">At stop</span><div class="kpi-icon tone-warn" id="ic-stop"></div></div><span class="stat-value">1</span></div>
+    <div class="kpi-card tone-success"><div class="kpi-top"><span class="stat-label">Completed</span><div class="kpi-icon tone-success" id="ic-done"></div></div><span class="stat-value">1</span></div>
+    <div class="kpi-card tone-danger"><div class="kpi-top"><span class="stat-label">Issues reported</span><div class="kpi-icon tone-danger" id="ic-issue"></div></div><span class="stat-value danger">1</span></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr>
+        <th>Vehicle</th><th>Driver</th><th>Trip</th><th>Current stop</th><th>Progress</th><th>ETA</th><th>Status</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</template>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/wow.js"></script>
+<script>
+  mountDispatcherShell("live");
+  document.getElementById("content").innerHTML = document.getElementById("page-tpl").innerHTML;
+  document.getElementById("ic-transit").innerHTML = ic("route");
+  document.getElementById("ic-stop").innerHTML = ic("pin");
+  document.getElementById("ic-done").innerHTML = ic("bell");
+  document.getElementById("ic-issue").innerHTML = ic("bell");
+  staggerIn("#kpis", 60);
+  WOW.countUpAll("#kpis .stat-value", 800);
+  WOW.tilt(".kpi-card", 5);
+
+  const statusMap = {
+    "In Transit": "badge-info", "At Stop": "badge-brand", "Completed": "badge-success", "Issue Reported": "badge-danger"
+  };
+  const liveDot = s => (s === "In Transit" || s === "Issue Reported") ? '<span class="badge-dot live"></span>' : '<span class="badge-dot"></span>';
+  document.getElementById("rows").innerHTML = WP_DATA.trips.map(t => `
+    <tr class="${t.status === 'Issue Reported' ? 'row-flagged' : ''}">
+      <td class="mono">${t.vehicle}</td>
+      <td>${t.driver}</td>
+      <td>${t.trip}</td>
+      <td>${t.stop}</td>
+      <td style="min-width:140px;"><div class="progress ${t.status==='Issue Reported'?'danger':t.status==='Completed'?'success':''}${t.status==='In Transit'?' live-route':''}"><span style="width:${t.progress}%"></span>${t.status==='In Transit'?`<span class="veh-marker" style="left:${t.progress}%"></span>`:''}</div></td>
+      <td>${t.eta}</td>
+      <td><span class="badge ${statusMap[t.status]}">${liveDot(t.status)}${t.status}</span></td>
+    </tr>`).join("");
+  WOW.reveal("#rows tr", 60);
+  WOW.fillIn("#rows .progress");
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initPage();
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".kpi-card", { baseElevation: 2, hoverElevation: 12 }); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card", { baseElevation: 1, hoverElevation: 8 }); }
+  if (WOWPremium.TopbarAnchor && WOWPremium.TopbarAnchor.createSticky) { WOWPremium.TopbarAnchor.createSticky(); }
+  document.querySelectorAll("[role='button'], .btn, .select").forEach(function(el){ el.setAttribute("data-cursor-respond",""); });
+})();
+</script>
+</body>
+</html>

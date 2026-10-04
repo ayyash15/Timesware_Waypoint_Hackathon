@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Record Outcome — Waypoint Driver</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  body { background: var(--c-ink-900); }
+  .phone-top { background: var(--c-navy-grad); border-bottom: none; color: #fff; }
+  .phone-top a { color: #8b96a1 !important; }
+  .outcome-btn { padding: 20px; font-size: var(--fs-500); border-radius: var(--r-lg); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .outcome-btn.selected { outline: 3px solid var(--c-navy); transform: scale(1.01); }
+  .pod-box { border: 2px dashed var(--c-border-strong); border-radius: var(--r-lg); padding: var(--sp-6); text-align:center; color: var(--c-ink-500); transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); cursor: pointer; }
+  .pod-box:hover { border-color: var(--c-brand); background: var(--c-brand-tint); }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+<div class="phone-frame">
+  <div id="offline-bar" class="offline-bar">OFFLINE — 3 records waiting to sync</div>
+  <div class="phone-top">
+    <div class="flex justify-between items-center">
+      <a href="driver-stop-detail.html" class="small" style="text-decoration:none; color:var(--c-ink-500);">&larr; Peliyagoda Supermarket</a>
+      <a href="index.html" aria-label="Home" title="Home" class="btn-icon btn-ghost btn" style="color:var(--c-ink-500);"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5L8 2l6 5.5"/><path d="M3.5 6.5V14h9V6.5"/></svg></a>
+    </div>
+    <h1 style="font-size:var(--fs-500); margin-top:4px;">Record Outcome</h1>
+  </div>
+  <div class="phone-body">
+    <div class="flex-col gap-3">
+      <button class="btn btn-success outcome-btn" data-o="DELIVERED">DELIVERED</button>
+      <button class="btn btn-secondary outcome-btn" data-o="ATTEMPTED">ATTEMPTED</button>
+      <button class="btn btn-danger outcome-btn" data-o="ISSUE">ISSUE</button>
+    </div>
+
+    <div id="pod-section" style="display:none;">
+      <div class="card-title" style="margin-top:var(--sp-4);">Proof of Delivery</div>
+      <div class="flex-col gap-3">
+        <div class="pod-box"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="4.5" width="13" height="9" rx="1.5"/><circle cx="8" cy="9" r="2.5"/><path d="M6 4.5l1-2h2l1 2"/></svg></span><br><strong>Take Photo</strong></div>
+        <div class="pod-box"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8 8-3.5 1L4 10.5 11 2z"/></svg></span><br><strong>Signature</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-cta-bar">
+    <button class="btn btn-brand btn-lg btn-block" id="submit-btn" disabled>Select an outcome to continue</button>
+  </div>
+</div>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  simulateOfflineCycle("offline-bar");
+  const submitBtn = document.getElementById("submit-btn");
+  const podSection = document.getElementById("pod-section");
+  document.querySelectorAll(".outcome-btn").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".outcome-btn").forEach(x => x.classList.remove("selected"));
+    b.classList.add("selected");
+    podSection.style.display = "block";
+    submitBtn.disabled = false;
+    submitBtn.textContent = b.dataset.o === "DELIVERED" ? "Confirm Delivery" : "Submit Outcome";
+  }));
+  submitBtn.addEventListener("click", () => {
+    toast("Outcome recorded — saved offline, will sync when connected", "success");
+    setTimeout(() => window.location.href = "driver-stops.html", 900);
+  });
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  if (WOWPremium.ResponsiveInteractions && WOWPremium.ResponsiveInteractions.init) { WOWPremium.ResponsiveInteractions.init(); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card"); }
+  if (WOWPremium.initScrollAnimations) { WOWPremium.initScrollAnimations({ sectionReveal: { scale: 0.96, opacity: 0.8, translateY: 20 } }); }
+})();
+</script>
+</body>
+</html>

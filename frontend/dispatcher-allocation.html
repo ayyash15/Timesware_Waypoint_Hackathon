@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Allocation &amp; Capacity Shortfall — Waypoint Dispatcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/wow.css" />
+<style>
+  .order-pool-item { border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--sp-3); margin-bottom: var(--sp-2); background: var(--c-surface-0); }
+  .order-pool-item.risk { border-color: #f0dcb0; background: var(--c-warning-tint); }
+  .order-pool-item .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .trip-card { border: 1px solid var(--c-border); border-radius: var(--r-lg); background: var(--c-surface-0); padding: var(--sp-4); margin-bottom: var(--sp-4); }
+  .trip-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-3); }
+  .trip-order-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--c-border); font-size: var(--fs-200); }
+  .trip-order-row:last-child { border-bottom: none; }
+  .cap-meter-row { display: flex; gap: var(--sp-4); margin-top: var(--sp-3); }
+  .cap-meter { flex: 1; }
+  .cap-meter .lbl { display: flex; justify-content: space-between; font-size: var(--fs-100); color: var(--c-ink-500); margin-bottom: 4px; }
+  .shortfall-banner { display: none; }
+  .shortfall-banner.show { display: block; }
+  .defer-reason-list button { display: block; width: 100%; text-align: left; }
+  .shortfall-stats { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-3); }
+  .shortfall-stats .sf-pill { background: rgba(255,255,255,.65); border-radius: var(--r-pill); padding: 6px 14px; font-size: var(--fs-200); font-weight: var(--fw-semibold); }
+  .shortfall-stats .sf-pill b { font-family: var(--f-display); margin-right: 4px; }
+  .strip-stat { display: flex; align-items: center; gap: var(--sp-3); padding-right: var(--sp-6); border-right: 1px solid var(--c-border); }
+  .strip-stat:last-of-type { border-right: none; padding-right: 0; }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body class="wow-mesh">
+<div class="wow-topline"></div>
+<div class="app-shell" id="app-shell"></div>
+
+<template id="page-tpl">
+  <div class="page-head">
+    <div>
+      <h1 class="wow-kinetic-h1">Allocation &amp; Planning</h1>
+      <div class="desc">Peliyagoda depot &middot; assigning confirmed orders to vehicles and trips for tomorrow's Fresh run.</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-secondary" id="toggle-shortfall">Simulate Capacity Shortfall</button>
+    </div>
+  </div>
+
+  <!-- CAPACITY SHORTFALL BANNER (degradation scenario) -->
+  <div class="alert alert-danger shortfall-banner wow-urgent" id="shortfall-banner">
+    <div class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></div>
+    <div style="flex:1;">
+      <div class="alert-title">CAPACITY SHORTFALL</div>
+      <p>Today's demand exceeds available capacity.</p>
+      <p style="margin-top:6px;"><strong>Binding constraint:</strong> 3 of 16 refrigerated vehicles are unavailable (workshop maintenance). Gampaha Fresh trips also exceed the 270-minute pre-dawn budget.</p>
+      <div class="shortfall-stats" id="sf-stats">
+        <span class="sf-pill"><b class="wow-count">86</b>confirmed orders</span>
+        <span class="sf-pill"><b class="wow-count">13/16</b>refrigerated capacity</span>
+        <span class="sf-pill"><b class="wow-count">6/8</b>van capacity</span>
+        <span class="sf-pill" style="color:var(--c-danger);"><b class="wow-count">12</b>orders at risk</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="flex justify-between items-center" style="flex-wrap:wrap; gap: var(--sp-4);">
+      <div class="flex" style="flex-wrap:wrap;">
+        <div class="strip-stat"><div class="kpi-icon tone-neutral" id="ic-strip-list"></div><div class="stat"><span class="stat-label">Confirmed</span><span class="stat-value" style="font-size:1.5rem;">86</span></div></div>
+        <div class="strip-stat"><div class="kpi-icon tone-success" id="ic-strip-route"></div><div class="stat"><span class="stat-label">Vehicles</span><span class="stat-value" style="font-size:1.5rem;">48</span></div></div>
+        <div class="strip-stat"><div class="kpi-icon tone-warn" id="ic-strip-pulse"></div><div class="stat"><span class="stat-label">Refrigerated</span><span class="stat-value warn" style="font-size:1.5rem;">13/16</span></div></div>
+        <div class="strip-stat"><div class="kpi-icon tone-neutral" id="ic-strip-grid"></div><div class="stat"><span class="stat-label">Van slots</span><span class="stat-value" style="font-size:1.5rem;">6/8</span></div></div>
+        <div class="strip-stat"><div class="kpi-icon tone-danger" id="ic-strip-bell"></div><div class="stat"><span class="stat-label">At risk</span><span class="stat-value danger" style="font-size:1.5rem;">12</span></div></div>
+      </div>
+      <button class="btn btn-brand" id="review-btn">12 orders will be deferred &middot; Review Deferrals</button>
+    </div>
+  </div>
+
+  <div class="grid-3col">
+    <!-- LEFT: orders waiting -->
+    <div class="card panel-scroll">
+      <div class="card-title">Waiting for allocation <span class="badge badge-neutral">10</span></div>
+      <div id="order-pool"></div>
+    </div>
+
+    <!-- CENTER: vehicle/trip workspace -->
+    <div class="flex-col gap-4">
+      <div class="card">
+        <div class="card-title">Colombo Fresh &middot; VEH014 (Reefer truck)</div>
+        <div class="trip-card" style="margin:0; border:none; padding:0;">
+          <div class="trip-order-row"><span>Peliyagoda Supermarket &middot; ORD-4471</span><span class="badge badge-chilled">Chilled</span></div>
+          <div class="trip-order-row"><span>Nugegoda Fresh Corner &middot; ORD-4474</span><span class="badge badge-chilled">Chilled</span></div>
+          <div class="cap-meter-row">
+            <div class="cap-meter"><div class="lbl"><span>Volume</span><span>7.8 / 12 m³</span></div><div class="progress"><span style="width:65%"></span></div></div>
+            <div class="cap-meter"><div class="lbl"><span>Weight</span><span>1,130 / 3,000 kg</span></div><div class="progress"><span style="width:38%"></span></div></div>
+          </div>
+        </div>
+        <hr class="divider" style="margin: var(--sp-3) 0;">
+        <div class="check-list">
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Capacity valid</div>
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Refrigeration valid — reefer vehicle, chilled goods</div>
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Depot valid — both outlets on Peliyagoda route</div>
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Vehicle access valid</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gampaha Fresh &middot; VEH021 (Reefer truck)</div>
+        <div class="trip-card" style="margin:0; border:none; padding:0;">
+          <div class="trip-order-row"><span>Negombo Fresh Mart &middot; ORD-4479</span><span class="badge badge-chilled">Chilled</span></div>
+          <div class="trip-order-row"><span>Wattala Lane Store &middot; ORD-4475</span><span class="badge badge-neutral">Van only outlet</span></div>
+          <div class="cap-meter-row">
+            <div class="cap-meter"><div class="lbl"><span>Volume</span><span>5.2 / 12 m³</span></div><div class="progress"><span style="width:43%"></span></div></div>
+            <div class="cap-meter"><div class="lbl"><span>Trip time</span><span>301 / 270 min</span></div><div class="progress danger"><span style="width:100%"></span></div></div>
+          </div>
+        </div>
+        <hr class="divider" style="margin: var(--sp-3) 0;">
+        <div class="check-list">
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Capacity valid</div>
+          <div class="check-item ok"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span></span> Refrigeration valid</div>
+          <div class="check-item fail"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></span> Van-only outlet requires a van — Wattala Lane Store cannot ride on VEH021 (truck)</div>
+          <div class="check-item fail"><span class="mark"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></span> Trip time budget exceeded — 301 of 270 pre-dawn minutes</div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center; color:var(--c-ink-500);">
+        + Add another vehicle to this plan
+      </div>
+    </div>
+
+    <!-- RIGHT: constraint & deferral panel -->
+    <div class="card panel-scroll">
+      <div class="card-title">Constraint &amp; Deferral Panel</div>
+      <p class="small muted" style="margin-bottom:var(--sp-3);">Orders that fail validation must be reassigned or deferred with a reason before the plan can be committed.</p>
+      <div id="flagged-orders"></div>
+    </div>
+  </div>
+</template>
+
+<!-- Defer reason modal -->
+<div class="modal-overlay" id="defer-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Defer order</div>
+    <p class="small muted" id="defer-order-name">Wattala Lane Store &middot; ORD-4475</p>
+    <div class="field" style="margin-top:var(--sp-4);">
+      <label>Reason for deferral</label>
+      <div class="defer-reason-list flex-col gap-2">
+        <button class="btn btn-secondary defer-reason">Refrigerated capacity</button>
+        <button class="btn btn-secondary defer-reason">Vehicle access</button>
+        <button class="btn btn-secondary defer-reason">Trip time budget</button>
+        <button class="btn btn-secondary defer-reason">Vehicle unavailable</button>
+        <button class="btn btn-secondary defer-reason">Dispatcher decision</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="defer-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/wow.js"></script>
+<script>
+  mountDispatcherShell("planning");
+  document.getElementById("content").innerHTML = document.getElementById("page-tpl").innerHTML;
+  document.getElementById("ic-strip-list").innerHTML = ic("list");
+  document.getElementById("ic-strip-route").innerHTML = ic("route");
+  document.getElementById("ic-strip-pulse").innerHTML = ic("pulse");
+  document.getElementById("ic-strip-grid").innerHTML = ic("grid");
+  document.getElementById("ic-strip-bell").innerHTML = ic("bell");
+  WOW.countUpAll(".strip-stat .stat-value", 800);
+  WOW.countUpAll("#sf-stats .wow-count", 800);
+  WOW.magnetic(".btn-brand");
+  WOW.tilt(".kpi-card", 5);
+
+  const pool = WP_DATA.orders.filter(o => o.status === "At risk");
+  document.getElementById("order-pool").innerHTML = pool.map(o => `
+    <div class="order-pool-item risk">
+      <strong>${o.outlet}</strong>
+      <div class="small muted">${o.id} &middot; ${o.brand} &middot; ${o.district}</div>
+      <div class="meta">
+        <span class="badge ${o.temp==='Chilled'?'badge-chilled':'badge-neutral'}">${o.temp}</span>
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-secondary open-defer" data-name="${o.outlet} &middot; ${o.id}">Defer</button>
+          <button class="btn btn-sm btn-brand" onclick="toast('${o.outlet} assigned to VEH014, trip 2', 'success')">Assign</button>
+        </div>
+      </div>
+    </div>`).join("");
+  WOW.reveal("#order-pool .order-pool-item", 60);
+
+  document.getElementById("flagged-orders").innerHTML = `
+    <div class="alert alert-warning" style="margin-bottom:var(--sp-3);">
+      <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></span>
+      <div><strong>Wattala Lane Store</strong><p class="small">Van-only outlet assigned to a truck. Reassign to an available van or defer.</p></div>
+    </div>
+    <div class="alert alert-warning">
+      <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2l6.5 11.3H1.5L8 2.2z"/><path d="M8 6.6v3.2M8 11.6v.1"/></svg></span></span>
+      <div><strong>Gampaha Fresh trip 1</strong><p class="small">Exceeds the 270-minute pre-dawn budget by 31 minutes. Split the trip or defer one stop.</p></div>
+    </div>
+  `;
+
+  const shortfallBtn = document.getElementById("toggle-shortfall");
+  const banner = document.getElementById("shortfall-banner");
+  shortfallBtn.addEventListener("click", () => {
+    banner.classList.toggle("show");
+    shortfallBtn.textContent = banner.classList.contains("show") ? "Hide Capacity Shortfall" : "Simulate Capacity Shortfall";
+  });
+  banner.classList.add("show"); // shown by default so judges see the degradation scenario immediately
+
+  const modal = document.getElementById("defer-modal");
+  document.querySelectorAll(".open-defer").forEach(btn => btn.addEventListener("click", () => {
+    document.getElementById("defer-order-name").textContent = btn.dataset.name;
+    modal.style.display = "flex";
+  }));
+  document.getElementById("defer-cancel").addEventListener("click", () => modal.style.display = "none");
+  document.querySelectorAll(".defer-reason").forEach(btn => btn.addEventListener("click", () => {
+    modal.style.display = "none";
+    toast(`Order deferred — reason: ${btn.textContent}`, "success");
+  }));
+
+  document.getElementById("review-btn").addEventListener("click", () => {
+    window.location.href = "deferral-summary.html";
+  });
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initPage();
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".kpi-card", { baseElevation: 2, hoverElevation: 12 }); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card", { baseElevation: 1, hoverElevation: 8 }); }
+  if (WOWPremium.TopbarAnchor && WOWPremium.TopbarAnchor.createSticky) { WOWPremium.TopbarAnchor.createSticky(); }
+  document.querySelectorAll("[role='button'], .btn, .select").forEach(function(el){ el.setAttribute("data-cursor-respond",""); });
+})();
+</script>
+</body>
+</html>

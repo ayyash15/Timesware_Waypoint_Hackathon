@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Loading List — Waypoint Loader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  body { background: var(--c-surface-1); }
+  .tb-top { background: var(--c-navy-grad); color:#fff; padding: var(--sp-4) var(--sp-6); display:flex; justify-content:space-between; align-items:center; box-shadow: var(--sh-2); position: sticky; top:0; z-index: 5; }
+  .tb-top .name { font-family: var(--f-display); font-weight:700; font-size: var(--fs-500); }
+  .stop-card { background: var(--c-surface-0); border:1px solid var(--c-border); border-radius: var(--r-lg); box-shadow: var(--sh-1); transition: box-shadow var(--dur-med) var(--ease), transform var(--dur-med) var(--ease); padding: var(--sp-5); margin-bottom: var(--sp-4); display:flex; justify-content:space-between; align-items:center; gap: var(--sp-4); }
+  .stop-card:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
+  .stop-num { width:44px; height:44px; border-radius:50%; background: var(--c-navy-grad); color:#fff; display:flex; align-items:center; justify-content:center; font-family: var(--f-display); font-weight:700; flex-shrink:0; box-shadow: var(--sh-1); }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+  <div class="tb-top">
+    <a class="name" href="index.html" style="text-decoration:none; color:inherit;">Waypoint &middot; Loader</a>
+    <div class="flex gap-3 items-center"><span class="chip" style="background:rgba(255,255,255,.08); color:#fff;">VEH014 &middot; Trip 1</span><a href="index.html" aria-label="Home" title="Home" class="btn-icon btn-ghost btn" style="color:#fff;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5L8 2l6 5.5"/><path d="M3.5 6.5V14h9V6.5"/></svg></a><div class="avatar">SL</div></div>
+  </div>
+  <div class="tablet-frame content">
+    <div class="page-head">
+      <div><h1>Loading List &middot; VEH014</h1><div class="desc">Colombo Fresh &middot; Trip 1 &middot; departs 04:10</div></div>
+      <a class="btn btn-secondary" href="loader-dock.html">&larr; Back to dock queue</a>
+    </div>
+    <div class="alert alert-warning">
+      <span class="alert-icon"><span class="ic-svg" style="display:inline-flex;vertical-align:-2px;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 5l6-3 6 3v6l-6 3-6-3V5z"/><path d="M2 5l6 3 6-3M8 8v6"/></svg></span></span>
+      <div><strong>LOAD LAST STOP FIRST</strong><p class="small">Load in the order shown below — stop 4 goes in first, stop 1 goes in last, so unloading matches the drop sequence.</p></div>
+    </div>
+    <div id="stops"></div>
+  </div>
+
+<!-- Flag shortfall/damage modal -->
+<div class="modal-overlay" id="flag-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title" id="flag-step-title">Select issue</div>
+    <div id="flag-step-1">
+      <div class="flex-col gap-2">
+        <button class="btn btn-secondary btn-lg" data-issue="Missing">Missing</button>
+        <button class="btn btn-secondary btn-lg" data-issue="Damaged">Damaged</button>
+        <button class="btn btn-secondary btn-lg" data-issue="Short">Short</button>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" id="flag-cancel">Cancel</button></div>
+  </div>
+</div>
+
+<script src="js/wp-live.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let currentOutlet = "";
+  document.getElementById("stops").innerHTML = WP_DATA.loadingStops.map(s => `
+    <div class="stop-card">
+      <div class="flex gap-4 items-center">
+        <div class="stop-num">${s.seq}</div>
+        <div>
+          <div style="font-weight:700;">${s.outlet}</div>
+          <div class="small muted">${s.order} &middot; ${s.items} &middot; ${s.volume} &middot; ${s.access}</div>
+        </div>
+        <span class="badge ${s.temp==='Chilled'?'badge-chilled':'badge-neutral'}">${s.temp}</span>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary flag-btn" data-outlet="${s.outlet}">Flag issue</button>
+        <button class="btn btn-success" onclick="toast('${s.outlet} marked loaded', 'success')">Loaded</button>
+      </div>
+    </div>`).join("");
+
+  const modal = document.getElementById("flag-modal");
+  document.querySelectorAll(".flag-btn").forEach(b => b.addEventListener("click", () => {
+    currentOutlet = b.dataset.outlet;
+    document.getElementById("flag-step-title").textContent = "Select issue — " + currentOutlet;
+    modal.style.display = "flex";
+  }));
+  document.getElementById("flag-cancel").addEventListener("click", () => modal.style.display = "none");
+  document.querySelectorAll("[data-issue]").forEach(b => b.addEventListener("click", () => {
+    modal.style.display = "none";
+    toast(`${b.dataset.issue} reported for ${currentOutlet} — Dispatcher notified`, "success");
+  }));
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  if (WOWPremium.ResponsiveInteractions && WOWPremium.ResponsiveInteractions.init) { WOWPremium.ResponsiveInteractions.init(); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card"); }
+  if (WOWPremium.initScrollAnimations) { WOWPremium.initScrollAnimations({ sectionReveal: { scale: 0.96, opacity: 0.8, translateY: 20 } }); }
+})();
+</script>
+</body>
+</html>

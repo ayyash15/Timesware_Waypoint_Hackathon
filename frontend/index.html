@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Waypoint — Intelligent Delivery Planning &amp; Operations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/wow.css" />
+<style>
+  body {
+    background: var(--c-navy-grad); color: #fff; min-height: 100vh;
+    position: relative;
+  }
+  body::before {
+    content: ""; position: fixed; inset: -20%; z-index: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(179,115,10,0.22), transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(36,114,164,0.16), transparent 45%);
+    pointer-events: none;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 0; opacity: .5;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 42px 42px; mask-image: radial-gradient(circle at 50% 30%, rgba(0,0,0,.9), transparent 70%);
+  }
+  #wow-network { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; }
+  .hub-section { min-height: 0; display: flex; align-items: center; justify-content: center; padding: var(--sp-7) 0 var(--sp-8); position: relative; z-index: 1; }
+  .hub { max-width: 920px; width: 100%; padding: var(--sp-7); position: relative; z-index: 1; animation: wp-rise 600ms var(--ease) both; }
+  .hub .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.08em; color: #d9a441; font-weight: 700; background: rgba(179,115,10,.14); border: 1px solid rgba(179,115,10,.3); padding: 5px 12px; border-radius: var(--r-pill); margin-bottom: var(--sp-4); }
+  .hub .brand-row { display:flex; align-items:center; gap:14px; margin-bottom: 10px; }
+  .hub .brand-row .mark { width:48px; height:48px; border-radius: 12px; background: var(--c-brand-grad); display:flex; align-items:center; justify-content:center; font-family: var(--f-display); font-weight:700; font-size: 22px; box-shadow: var(--sh-brand); }
+  .hub h1 { font-size: 3rem; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .hub p.lead { color: #9aa4ae; margin-bottom: var(--sp-8); max-width: 600px; font-size: var(--fs-400); line-height: 1.6; }
+  .role-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4); }
+  .role-card {
+    background: linear-gradient(165deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+    border: 1px solid #262f3b; border-radius: var(--r-lg); padding: var(--sp-5);
+    text-decoration: none; color: #fff; display: flex; flex-direction: column; gap: var(--sp-3);
+    transition: transform var(--dur-med) var(--ease-spring), border-color var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
+    position: relative; overflow: hidden;
+  }
+  .role-card::before { content:""; position:absolute; top:0; left:0; right:0; height:2px; background: var(--c-brand-grad); opacity:0; transition: opacity var(--dur-med) var(--ease); }
+  .role-card:hover { transform: translateY(-4px); border-color: #3a4556; box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+  .role-card:hover::before { opacity: 1; }
+  .role-card .role-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; color: #d9a441; }
+  .role-card .tag { font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.06em; color: #7c8894; font-weight: 700; }
+  .role-card h3 { font-size: var(--fs-500); }
+  .role-card p { color: #8b96a1; font-size: var(--fs-200); line-height: 1.5; }
+  .role-card .go { margin-top: auto; font-size: var(--fs-100); font-weight: 700; color: #d9a441; display:flex; align-items:center; gap: 4px; opacity: 0; transform: translateX(-4px); transition: all var(--dur-med) var(--ease); }
+  .role-card:hover .go { opacity: 1; transform: translateX(0); }
+  .hub-foot { margin-top: var(--sp-7); display:flex; gap: var(--sp-5); color: #5b6874; font-size: var(--fs-100); }
+  @media (max-width: 800px) { .role-grid { grid-template-columns: 1fr 1fr; } }
+
+  /* ---- Centered scroll hero (Home only) ---- */
+  .wp-hero { position: relative; z-index: 1; height: 150vh; margin-bottom: -35vh; }
+  .wp-hero-stage {
+    position: sticky; top: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; will-change: transform;
+  }
+  .wp-hero-object {
+    width: 132px; height: 132px; border-radius: 30px; background: var(--c-brand-grad);
+    display: flex; align-items: center; justify-content: center; box-shadow: var(--sh-brand);
+    font-family: var(--f-display); font-weight: 700; font-size: 56px; color: #fff;
+    will-change: transform, opacity; opacity: 0;
+  }
+  .wp-hero-copy {
+    /* Fixed offset below the icon's bounding box (icon peaks at 132px * 1.35
+       ~= 178px tall, so center + 89px clears it) rather than sharing the
+       icon's own centered position, which is what caused the wordmark/
+       subtitle to render directly on top of the enlarged icon. */
+    position: absolute; left: 50%; top: calc(50% + 96px);
+    text-align: center; opacity: 0; will-change: transform, opacity;
+  }
+  .wp-hero-copy h2 { font-family: var(--f-display); font-weight: 700; font-size: 3rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .wp-hero-copy p { color: #9aa4ae; font-size: var(--fs-400); }
+  .wp-hero-cue {
+    position: absolute; left: 50%; bottom: var(--sp-8); transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: #7c8894; font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    transition: opacity var(--dur-med) var(--ease);
+  }
+  .wp-hero-cue i {
+    width: 1px; height: 28px; background: linear-gradient(180deg, #7c8894, transparent);
+  }
+
+  /* ---- Journey state track: route line + traveling dot + state label ---- */
+  .wp-hero-route {
+    /* Sits above the icon's bounding box (see .wp-hero-copy note) so the
+       travel line never crosses the icon, wordmark or subtitle. */
+    position: absolute; left: 50%; top: calc(50% - 132px); width: 420px; height: 2px;
+    transform: translate(-50%, -50%); pointer-events: none; opacity: 0; will-change: opacity;
+  }
+  .wp-hero-route svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .wp-hero-route .rt-line { fill: none; stroke: rgba(255,255,255,.14); stroke-width: 2; }
+  .wp-hero-route .rt-progress { fill: none; stroke: url(#wpRouteGrad); stroke-width: 2; stroke-linecap: round; }
+  .wp-hero-route .rt-node { fill: #10151d; stroke: #7c8894; stroke-width: 1.4; }
+  .wp-hero-route .rt-node.on { stroke: #d9a441; }
+  .wp-hero-route .rt-dot { fill: #fff; filter: drop-shadow(0 0 6px rgba(217,164,65,.9)); }
+  .wp-hero-state {
+    /* Below the wordmark/subtitle block, in the same top-down stack as
+       .wp-hero-copy, so it never overlaps the copy above it. */
+    position: absolute; left: 50%; top: calc(50% + 210px); transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px; opacity: 0; will-change: opacity, transform;
+  }
+  .wp-hero-state .dot { width: 6px; height: 6px; border-radius: 50%; background: #d9a441; box-shadow: 0 0 8px rgba(217,164,65,.8); }
+  .wp-hero-state span { font-size: var(--fs-100); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #d9a441; }
+  @media (max-width: 720px) {
+    .wp-hero { height: 130vh; }
+    .wp-hero-object { width: 92px; height: 92px; border-radius: 22px; font-size: 40px; }
+    .wp-hero-copy { top: calc(50% + 70px); }
+    .wp-hero-copy h2 { font-size: 2.1rem; }
+    .wp-hero-route { width: 220px; top: calc(50% - 96px); }
+    .wp-hero-state { top: calc(50% + 158px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wp-hero { height: auto; }
+    .wp-hero-stage { position: relative; height: auto; padding: var(--sp-9) 0; }
+    .wp-hero-object, .wp-hero-copy { opacity: 1 !important; transform: none !important; position: static !important; margin-bottom: var(--sp-5); }
+    .wp-hero-cue, .wp-hero-route, .wp-hero-state { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+  <div class="wow-topline"></div>
+  <canvas id="wow-network"></canvas>
+
+  <section class="wp-hero" id="wpHero">
+    <div class="wp-hero-stage" id="wpHeroStage">
+      <div class="wp-hero-route" id="wpHeroRoute" aria-hidden="true">
+        <svg viewBox="0 0 420 2" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wpRouteGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#b3730a"/>
+              <stop offset="100%" stop-color="#d9a441"/>
+            </linearGradient>
+          </defs>
+          <line class="rt-line" x1="0" y1="1" x2="420" y2="1"/>
+          <line class="rt-progress" id="wpRouteProgress" x1="0" y1="1" x2="0" y2="1"/>
+          <circle class="rt-node" cx="0" cy="1" r="4"/>
+          <circle class="rt-node" id="wpRouteEndNode" cx="420" cy="1" r="4"/>
+          <circle class="rt-dot" id="wpRouteDot" cx="0" cy="1" r="4.5"/>
+        </svg>
+      </div>
+      <div class="wp-hero-object" id="wpHeroObject" aria-hidden="true">W</div>
+      <div class="wp-hero-state" id="wpHeroState"><span class="dot"></span><span id="wpHeroStateLabel">Planned</span></div>
+      <div class="wp-hero-copy" id="wpHeroCopy">
+        <h2>Waypoint</h2>
+        <p>Intelligent Delivery Planning &amp; Operations</p>
+      </div>
+      <!-- Moved inside the sticky (100vh) stage rather than the 180vh
+           scrollable section, so it anchors to the visible viewport on
+           load instead of sitting ~600px below the fold. -->
+      <div class="wp-hero-cue" id="wpHeroCue"><span>Scroll</span><i></i></div>
+    </div>
+  </section>
+
+  <div class="hub-section">
+  <div class="hub">
+    <span class="eyebrow">Team Timesware &middot; Tech-Triathlon 2026</span>
+    <div class="brand-row"><div class="mark">W</div><h1 style="margin:0;">Waypoint</h1></div>
+    <p class="lead">Intelligent Delivery Planning &amp; Operations System for cold-chain retail distribution — allocation, live tracking, and deferral management across four connected roles. Pick a role to open its experience.</p>
+    <div class="role-grid">
+      <a class="role-card" href="dispatcher-overview.html">
+        <div class="role-icon"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></div>
+        <span class="tag">Desktop</span>
+        <h3>Dispatcher</h3>
+        <p>Order queue, allocation, capacity shortfall, live ops, deferrals.</p>
+        <span class="go">Open workspace &rarr;</span>
+      </a>
+      <a class="role-card" href="loader-dock.html">
+        <div class="role-icon"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 5l6-3 6 3v6l-6 3-6-3V5z"/><path d="M2 5l6 3 6-3M8 8v6"/></svg></div>
+        <span class="tag">Tablet</span>
+        <h3>Loader</h3>
+        <p>Dock queue, stop-sequence loading, shortfall &amp; damage flags.</p>
+        <span class="go">Open workspace &rarr;</span>
+      </a>
+      <a class="role-card" href="driver-stops.html">
+        <div class="role-icon"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="12.5" r="1.6"/><circle cx="13" cy="3.5" r="1.6"/><path d="M4.4 11.3C7 8.5 6 6 9 5"/></svg></div>
+        <span class="tag">Phone</span>
+        <h3>Driver</h3>
+        <p>Today's stops, stop detail, proof of delivery, offline sync.</p>
+        <span class="go">Open workspace &rarr;</span>
+      </a>
+      <a class="role-card" href="store-order.html">
+        <div class="role-icon"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="11" height="9" rx="1.5"/><path d="M5 4.5V3a3 3 0 016 0v1.5"/></svg></div>
+        <span class="tag">Responsive</span>
+        <h3>Store Manager</h3>
+        <p>Place order, confirmation, delivery status, receipt confirmation.</p>
+        <span class="go">Open workspace &rarr;</span>
+      </a>
+    </div>
+    <div class="hub-foot">
+      <span>Peliyagoda Depot &middot; Fresh / Style / Tech brands</span>
+      <span>Synthetic demo data</span>
+    </div>
+  </div>
+  </div>
+<script src="js/wow.js"></script>
+<script>
+  WOW.initNetworkCanvas("wow-network");
+  WOW.tilt(".role-card", 6);
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  WOWPremium.initPage();
+  document.querySelectorAll(".role-card").forEach(function(c){ c.setAttribute("data-cursor-respond",""); });
+  if (WOWPremium.ElementResponder && WOWPremium.ElementResponder.createClickExpand) { WOWPremium.ElementResponder.createClickExpand(".role-card"); }
+})();
+</script>
+
+<script>
+/* ---- Waypoint Home — centered scroll hero ----
+   Scroll-position-driven zoom/transform of the brand mark, plus a subtle
+   proximity-based cursor response. Scoped to index.html only. */
+(function () {
+  var hero = document.getElementById("wpHero");
+  var stage = document.getElementById("wpHeroStage");
+  var obj = document.getElementById("wpHeroObject");
+  var copy = document.getElementById("wpHeroCopy");
+  var cue = document.getElementById("wpHeroCue");
+  var route = document.getElementById("wpHeroRoute");
+  var routeLine = document.getElementById("wpRouteProgress");
+  var routeDot = document.getElementById("wpRouteDot");
+  var endNode = document.getElementById("wpRouteEndNode");
+  var stateEl = document.getElementById("wpHeroState");
+  var stateLabel = document.getElementById("wpHeroStateLabel");
+  if (!hero || !stage || !obj) return;
+
+  var ROUTE_W = 420;
+  var lastState = "";
+  function setState(p) {
+    var label = p < 0.34 ? "Planned" : p < 0.58 ? "In transit" : p < 0.86 ? "Approaching" : "Delivered";
+    if (label !== lastState) { lastState = label; stateLabel.textContent = label; }
+  }
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) return; // CSS fallback already makes everything visible/static
+
+  var targetP = 0, curP = 0;
+  var targetMX = 0, targetMY = 0, curMX = 0, curMY = 0;
+  var raf = null;
+
+  function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  function heroProgress() {
+    var rect = hero.getBoundingClientRect();
+    var top = rect.top + window.scrollY;
+    var scrollable = Math.max(hero.offsetHeight - window.innerHeight, 1);
+    var p = (window.scrollY - top) / scrollable;
+    return Math.max(0, Math.min(1, p));
+  }
+
+  function onScroll() {
+    targetP = heroProgress();
+    wake();
+  }
+
+  function onMouseMove(e) {
+    var r = stage.getBoundingClientRect();
+    var dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+    var dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+    targetMX = Math.max(-1, Math.min(1, dx));
+    targetMY = Math.max(-1, Math.min(1, dy));
+    wake();
+  }
+  function onMouseLeave() { targetMX = 0; targetMY = 0; wake(); }
+
+  function wake() { if (!raf) raf = requestAnimationFrame(tick); }
+
+  function tick() {
+    curP += (targetP - curP) * 0.18;
+    curMX += (targetMX - curMX) * 0.12;
+    curMY += (targetMY - curMY) * 0.12;
+
+    render(curP, curMX, curMY);
+
+    var settled = Math.abs(targetP - curP) < 0.001 && Math.abs(targetMX - curMX) < 0.001 && Math.abs(targetMY - curMY) < 0.001;
+    raf = settled ? null : requestAnimationFrame(tick);
+  }
+
+  function render(p, mx, my) {
+    var scale, rot, opacity, ty;
+    var proximity = 1 - Math.min(1, Math.abs(p - 0.46) / 0.46); // cursor influence peaks mid-sequence
+
+    if (p <= 0.38) {
+      var t = ease(p / 0.38);
+      scale = 0.55 + t * 0.75;
+      rot = 0;
+      opacity = Math.min(1, t * 1.6);
+      ty = 24 * (1 - t);
+    } else if (p <= 0.78) {
+      scale = 1.30;
+      rot = 0;
+      opacity = 1;
+      ty = 0;
+    } else {
+      var t3 = ease((p - 0.78) / 0.22);
+      scale = 1.30 - t3 * 0.35;
+      rot = 0;
+      opacity = 1 - t3;
+      ty = -16 * t3;
+    }
+
+    var mxOff = mx * 18 * proximity;
+    var myOff = my * 14 * proximity;
+
+    obj.style.opacity = opacity;
+    obj.style.transform = "translate3d(" + mxOff + "px," + (ty + myOff) + "px,0) scale(" + scale + ") rotate(" + rot + "deg)";
+
+    if (copy) { copy.style.opacity = p > 0.78 ? Math.max(0, 1 - (p - 0.78) / 0.16) : 1; copy.style.transform = "translateX(-50%)"; }
+    if (cue) cue.style.opacity = Math.max(0, 1 - p * 3.2);
+
+    /* Route line: vehicle position = route progress (one driver, no independent motion) */
+    if (route && routeLine && routeDot) {
+      var routeP = p < 0.22 ? 0 : (p > 0.94 ? Math.max(0, 1 - (p - 0.94) / 0.06) : Math.min(1, (p - 0.22) / 0.12));
+      var travel = Math.max(0, Math.min(1, (p - 0.06) / 0.88));
+      var x = travel * ROUTE_W;
+      route.style.opacity = routeP;
+      routeLine.setAttribute("x2", x.toFixed(1));
+      routeDot.setAttribute("cx", x.toFixed(1));
+      if (endNode) endNode.setAttribute("class", "rt-node" + (travel > 0.97 ? " on" : ""));
+    }
+    if (stateEl) {
+      var stateP = p < 0.22 ? 0 : (p > 0.94 ? Math.max(0, 1 - (p - 0.94) / 0.06) : Math.min(1, (p - 0.22) / 0.12));
+      stateEl.style.opacity = stateP;
+      stateEl.style.transform = "translateX(-50%) translateY(" + (8 * (1 - stateP)) + "px)";
+      setState(p);
+    }
+
+    /* stage kept still */
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  if (window.innerWidth >= 900) {
+    stage.addEventListener("mousemove", onMouseMove);
+    stage.addEventListener("mouseleave", onMouseLeave);
+  }
+  onScroll();
+})();
+</script>
+</body>
+</html>

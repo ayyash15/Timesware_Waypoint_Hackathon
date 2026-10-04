@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Place Order — Waypoint Store Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  .sm-top { background: rgba(255,255,255,.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--c-border); padding: var(--sp-4) var(--sp-6); display:flex; justify-content:space-between; align-items:center; position: sticky; top:0; z-index:5; }
+  .sm-wrap { max-width: 640px; margin: 0 auto; padding: var(--sp-6); display:flex; flex-direction:column; gap: var(--sp-5); animation: wp-rise 420ms cubic-bezier(0.2,0,0,1) both; }
+  .cutoff-card { background: var(--c-navy-grad); color:#fff; border-radius: var(--r-lg); padding: var(--sp-5); display:flex; justify-content:space-between; align-items:center; box-shadow: var(--sh-2); position: relative; overflow: hidden; }
+  .cutoff-card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--c-brand-grad); }
+  .cutoff-timer { font-family: var(--f-mono); font-size: var(--fs-700); font-weight:700; letter-spacing: 0.02em; }
+  .qty-row { display:flex; justify-content:space-between; align-items:center; padding: var(--sp-3) 0; border-bottom: 1px solid var(--c-border); }
+  .qty-row:last-child { border-bottom:none; }
+</style>
+<link rel="stylesheet" href="css/wow-premium.css" />
+</head>
+<body>
+  <div class="sm-top">
+    <a class="flex gap-2 items-center" href="index.html" style="text-decoration:none; color:inherit;"><div class="avatar" style="background:var(--c-brand);">W</div><strong>Waypoint &middot; Store</strong></a>
+    <div class="flex gap-2 items-center"><a href="index.html" aria-label="Home" title="Home" class="btn-icon btn-ghost btn" style="color:var(--c-ink-700);"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5L8 2l6 5.5"/><path d="M3.5 6.5V14h9V6.5"/></svg></a><span class="chip">Fathima &middot; Nugegoda Fresh Corner</span></div>
+  </div>
+  <div class="sm-wrap">
+    <div class="page-head" style="align-items:flex-start;">
+      <div><h1>Place Order</h1><div class="desc">For delivery tomorrow, Thu 1 Oct</div></div>
+    </div>
+
+    <div class="cutoff-card">
+      <div>
+        <div class="small" style="color:#c7cdd4;">ORDER CUTOFF</div>
+        <div>Next-day orders close in</div>
+      </div>
+      <div class="cutoff-timer" id="cutoff">02:14:32</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Order details</div>
+      <div class="field" style="margin-bottom:var(--sp-4);">
+        <label>Brand</label>
+        <select class="select"><option>Fresh</option><option>Style</option><option>Tech</option></select>
+      </div>
+      <div class="field" style="margin-bottom:var(--sp-4);">
+        <label>Order type</label>
+        <div class="flex gap-2">
+          <label class="chip" style="cursor:pointer;"><input type="radio" name="ttype" checked style="margin-right:6px;">Dry groceries</label>
+          <label class="chip" style="cursor:pointer;"><input type="radio" name="ttype" style="margin-right:6px;">Chilled</label>
+        </div>
+      </div>
+      <div class="qty-row"><span>Fresh dairy cases</span><input class="input" style="width:80px;" type="number" value="12"></div>
+      <div class="qty-row"><span>Produce crates</span><input class="input" style="width:80px;" type="number" value="8"></div>
+      <div class="qty-row"><span>Frozen goods cases</span><input class="input" style="width:80px;" type="number" value="4"></div>
+    </div>
+
+    <a class="btn btn-brand btn-lg btn-block" href="store-confirmation.html">Submit Order</a>
+  </div>
+
+<script src="js/wp-live.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let t = 8072;
+  const el = document.getElementById("cutoff");
+  setInterval(() => {
+    t--; if (t < 0) t = 0;
+    const h = String(Math.floor(t/3600)).padStart(2,"0");
+    const m = String(Math.floor((t%3600)/60)).padStart(2,"0");
+    const s = String(t%60).padStart(2,"0");
+    el.textContent = `${h}:${m}:${s}`;
+  }, 1000);
+</script>
+<script src="js/wow-premium.js"></script>
+
+<script>
+(function(){
+  if (!window.WOWPremium) return;
+  if (WOWPremium.ResponsiveInteractions && WOWPremium.ResponsiveInteractions.init) { WOWPremium.ResponsiveInteractions.init(); }
+  if (WOWPremium.CardElevator) { WOWPremium.CardElevator.enhanceCards(".card"); }
+  if (WOWPremium.initScrollAnimations) { WOWPremium.initScrollAnimations({ sectionReveal: { scale: 0.96, opacity: 0.8, translateY: 20 } }); }
+})();
+</script>
+</body>
+</html>

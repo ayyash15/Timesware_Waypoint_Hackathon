@@ -1,0 +1,447 @@
+/* ==========================================================================
+   WAYPOINT — WOW PREMIUM LAYER
+   Sophisticated spatial interactions, scroll-linked animations, 
+   cursor responsiveness. Preserves existing design completely.
+   ========================================================================== */
+
+:root {
+  /* Premium animation curves */
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-in-out-cubic: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Premium shadows */
+  --sh-premium-1: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --sh-premium-2: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --sh-premium-3: 0 12px 28px rgba(0, 0, 0, 0.15);
+  --sh-premium-float: 0 20px 40px rgba(0, 0, 0, 0.16);
+}
+
+/* ========== SCROLL-LINKED SECTION REVEALS ========== */
+[data-wow-section] {
+  position: relative;
+  z-index: 1;
+}
+
+[data-wow-item] {
+  will-change: transform, opacity;
+}
+
+/* Staggered reveal for list items */
+[data-wow-section] > * {
+  transition: opacity var(--dur-slow) var(--ease-smooth), 
+              transform var(--dur-slow) var(--ease-smooth);
+}
+
+/* Hero sections scroll into view */
+.section-hero {
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.section-hero.wow-in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Feature cards lift on scroll */
+.feature-card {
+  transition: transform var(--dur-med) var(--ease-bounce),
+              box-shadow var(--dur-med) var(--ease);
+  will-change: transform;
+}
+
+/* ========== CURSOR PROXIMITY EFFECTS ========== */
+[data-cursor-respond] {
+  transition: transform var(--dur-med) var(--ease-smooth);
+  will-change: transform;
+}
+
+/* Card lift on cursor approach */
+.kpi-card, .card {
+  transition: transform var(--dur-med) var(--ease-bounce),
+              box-shadow var(--dur-med) var(--ease-smooth);
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+}
+
+.kpi-card {
+  transform: translateY(-2px);
+}
+
+.kpi-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Tablet: reduced elevation */
+@media (max-width: 1024px) {
+  .kpi-card {
+    transform: translateY(0);
+  }
+  
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ========== ROUTE VISUALIZATION ANIMATIONS ========== */
+[data-route] {
+  position: relative;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+[data-route-meta] {
+  will-change: transform, opacity;
+  transition: opacity var(--dur-med) var(--ease-smooth),
+              transform var(--dur-med) var(--ease-smooth);
+}
+
+/* Route line animation on scroll */
+[data-route]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--c-brand), transparent);
+  will-change: width;
+  pointer-events: none;
+}
+
+/* Vehicle icons glide along routes */
+[data-vehicle] {
+  transition: transform var(--dur-med) var(--ease-smooth),
+              opacity var(--dur-med) var(--ease);
+  will-change: transform;
+}
+
+/* ========== CLICK-STATE TRANSITIONS ========== */
+.role-card {
+  cursor: pointer;
+  position: relative;
+  transition: transform var(--dur-med) var(--ease-bounce),
+              box-shadow var(--dur-med) var(--ease-smooth);
+  will-change: transform;
+}
+
+.role-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-lg);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.role-card:active::after {
+  animation: click-pulse 0.4s var(--ease) forwards;
+}
+
+@keyframes click-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(214, 143, 31, 0.4);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(214, 143, 31, 0);
+    opacity: 0;
+  }
+}
+
+/* ========== TOPBAR STICKY BEHAVIOR ==========
+   Sticky (not fixed) so the topbar stays anchored to the top of its own
+   flex column (.main, to the right of the sidebar) and continues to
+   occupy space in normal flow. `position: fixed` here previously pulled
+   it fully out of flow and stretched it edge-to-edge (left:0; right:0),
+   which both overlapped the sidebar and floated it directly over the
+   first block of page content since nothing reserved space for it. */
+.topbar {
+  will-change: transform;
+  transition: transform var(--dur-med) var(--ease-smooth);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* ========== PARALLAX DEPTH ========== */
+[data-parallax] {
+  will-change: transform;
+  transition: transform var(--dur-slow) var(--ease-smooth);
+}
+
+[data-parallax="near"] {
+  transform: translateY(0);
+}
+
+[data-parallax="mid"] {
+  transform: translateY(-8px);
+}
+
+[data-parallax="far"] {
+  transform: translateY(-16px);
+}
+
+/* ========== SMOOTH SCROLL ANCHOR POINTS ========== */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+a[href^="#"] {
+  transition: color var(--dur-fast) var(--ease);
+}
+
+/* ========== BUTTON INTERACTIONS ========== */
+button, [role="button"], .btn {
+  transition: transform var(--dur-fast) var(--ease-smooth),
+              box-shadow var(--dur-fast) var(--ease-smooth),
+              background-color var(--dur-fast) var(--ease);
+  will-change: transform;
+}
+
+button:active, [role="button"]:active {
+  transform: scale(0.98);
+}
+
+/* ========== TABLE ROW ENHANCEMENTS ========== */
+table.data tbody tr {
+  transition: background-color var(--dur-med) var(--ease);
+  will-change: background-color;
+}
+
+table.data tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Row indicator on hover */
+table.data tbody tr:hover td:first-child::before {
+  animation: row-indicator 0.4s var(--ease-smooth) forwards;
+}
+
+@keyframes row-indicator {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 3px;
+    opacity: 1;
+  }
+}
+
+/* ========== INPUT FOCUS ENHANCEMENT ========== */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05),
+              0 0 0 3px rgba(214, 143, 31, 0.1);
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+
+/* ========== MODAL/OVERLAY ANIMATIONS ========== */
+.modal, [role="dialog"] {
+  animation: modal-enter 0.3s var(--ease-smooth) backwards;
+  will-change: transform, opacity;
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal::backdrop {
+  animation: backdrop-enter 0.3s var(--ease-smooth) backwards;
+}
+
+@keyframes backdrop-enter {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* ========== LOADER/SPINNER ANIMATIONS ========== */
+[data-loading]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: loading-sweep 1.5s linear infinite;
+}
+
+@keyframes loading-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ========== LIST ITEM STAGGER ========== */
+.list-item, .todo-item, [role="listitem"] {
+  animation: item-enter 0.5s var(--ease-smooth) backwards;
+  will-change: transform, opacity;
+}
+
+.list-item:nth-child(1) { animation-delay: 0ms; }
+.list-item:nth-child(2) { animation-delay: 50ms; }
+.list-item:nth-child(3) { animation-delay: 100ms; }
+.list-item:nth-child(4) { animation-delay: 150ms; }
+.list-item:nth-child(5) { animation-delay: 200ms; }
+.list-item:nth-child(n+6) { animation-delay: 250ms; }
+
+@keyframes item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== NOTIFICATION ANIMATIONS ========== */
+[role="alert"], .notification, .toast {
+  animation: notify-enter 0.4s var(--ease-bounce) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes notify-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== PROGRESS BAR ANIMATION ========== */
+.progress span {
+  will-change: width;
+  transition: width var(--dur-slow) var(--ease-smooth);
+  animation: progress-pulse 2s var(--ease) infinite;
+}
+
+@keyframes progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ========== DROPDOWN & MENU ANIMATIONS ========== */
+[role="menu"], [role="listbox"], .dropdown {
+  animation: menu-enter 0.2s var(--ease-smooth) backwards;
+  will-change: transform, opacity;
+  transform-origin: top center;
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: scaleY(0.92) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+}
+
+[role="menuitem"] {
+  transition: background-color var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease-smooth);
+}
+
+[role="menuitem"]:hover {
+  transform: translateX(2px);
+}
+
+/* ========== BADGE/TAG PULSE ========== */
+.badge.new, .tag.new {
+  animation: badge-pulse 2s var(--ease) infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(214, 143, 31, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(214, 143, 31, 0.2);
+  }
+}
+
+/* ========== REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========== MOBILE OPTIMIZATION ========== */
+@media (max-width: 768px) {
+  /* Disable complex animations on mobile */
+  [data-parallax] {
+    transform: none !important;
+  }
+
+  [data-cursor-respond] {
+    pointer-events: auto;
+  }
+
+  /* Simplify on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .kpi-card:hover,
+    .card:hover,
+    .role-card:hover {
+      transform: none;
+      box-shadow: var(--sh-2);
+    }
+  }
+}
+
+/* ========== PERFORMANCE OPTIMIZATIONS ========== */
+/* Use transform and opacity for animations */
+.animated {
+  will-change: transform, opacity;
+}
+
+/* Reduce paint operations */
+.heavy-interaction {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* GPU acceleration for smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize shadows */
+.elevated {
+  box-shadow: var(--sh-premium-2);
+  transition: box-shadow var(--dur-med) var(--ease-smooth);
+}
+
+.elevated:hover {
+  box-shadow: var(--sh-premium-float);
+}
